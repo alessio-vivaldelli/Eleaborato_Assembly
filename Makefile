@@ -1,25 +1,20 @@
-EXE_C=build/main.o
-EXE_S=build/test
-
-AS=as --32
-LD=ld -m elf_i386
+EXE=bin/pianificatore
+AS= as --32
+LD= ld -m elf_i386
 FLAGS=-gstabs
-OBJ_C=main.c
-OBJ_S=build/main_S.o
-
+OBJ=obj/pianificatore.o
 GCC=gcc
 
 
+$(EXE) bin/file_read: $(OBJ) obj/file_read.o
+	$(LD) -o $(EXE) $(OBJ)
+	$(LD) -o bin/file_read obj/file_read.o	
 
-$(EXE_C): $(OBJ_C)
-	$(GCC) $(FLAGS) $(OBJ_C) -o $(EXE_C)
+obj/pianificatore.o: src/pianificatore.s
+	$(AS) $(FLAGS) -o obj/pianificatore.o src/pianificatore.s
 
-$(OBJ_S): ASM/test.s
-	$(AS) $(FLAGS) -o $(OBJ_S) ASM/test.s
-
-$(EXE_S): $(OBJ_S)
-	$(LD) -o $(EXE_S) $(OBJ_S)
-
+obj/file_read.o: src/file_read.s
+	$(AS) $(FLAGS) -o obj/file_read.o src/file_read.s
 
 clean:
-	rm -f *.o $(EXE_C) core
+	rm -f *.o $(EXE) core
