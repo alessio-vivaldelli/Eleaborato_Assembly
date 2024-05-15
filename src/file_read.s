@@ -5,7 +5,11 @@ buffer: .string ""       # Spazio per il buffer di input
 newline: .byte 10        # Valore del simbolo di nuova linea
 lines: .int 0            # Numero di linee 
 
-err: .ascii "Errore apertura file\n"
+n_args: .int 0
+f_arg: .long 0
+char_prt: .ascii  "-"
+
+err: .ascii "Errore apertura file - \n"
 err_len: .long . - err
 
 done: .ascii "FILE aperto\n"
@@ -23,10 +27,52 @@ _start:
     int $0x80           # Interruzione del kernel
 
     test %eax, %eax
-    jl _exit
+    jz _exit
     
-    mov %eax, fd      # Salva il file descriptor in ebx
+    mov %eax, fd      # Salva il file descriptor in fd
 
+    popl %edx
+    popl %edx
+
+    _args:
+
+    popl %ecx
+    xor %edx, %edx
+
+    test %ecx, %ecx
+    jz _done
+
+    loop:
+        movb (%ecx, %edx), %al
+        test %al, %al 
+        jz _args
+
+        inc %edx
+
+        pushl %edx
+        pushl %ecx
+        pushl %eax
+
+
+        movb %al, char_prt
+
+        leal char_prt, %ecx
+        ; movl $4, %ecx
+        ; movl %eax, %ecx # load character in ecx 
+        ; leal char_prt, %ecx    
+
+        movl $4, %eax
+        movl $1, %ebx
+        movl $1, %edx # lenght
+        int $0x80
+        
+        popl %eax
+        xor %eax, %eax
+
+        popl %ecx
+        popl %edx
+        
+        jmp loop
 
 
 _done:

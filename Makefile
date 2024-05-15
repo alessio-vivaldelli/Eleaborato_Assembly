@@ -1,20 +1,43 @@
-EXE=bin/pianificatore
-AS= as --32
-LD= ld -m elf_i386
+# Variabili
+EXES=bin/pianificatore bin/file_read bin/get_arg
+AS=as --32
+LD=ld -m elf_i386
 FLAGS=-gstabs
-OBJ=obj/pianificatore.o
+OBJS_PIANIFICATORE=obj/pianificatore.o
+OBJS_FILE_READ=obj/file_read.o
+OBJS_get_arg=obj/get_arg.o
 GCC=gcc
 
+# Regole per creare le directory necessarie
+.PHONY: all
+all: dirs $(EXES)
 
-$(EXE) bin/file_read: $(OBJ) obj/file_read.o
-	$(LD) -o $(EXE) $(OBJ)
-	$(LD) -o bin/file_read obj/file_read.o	
+# Regola per creare le directory
+.PHONY: dirs
+dirs:
+	mkdir -p bin obj
 
+# Regole per gli eseguibili
+bin/pianificatore: $(OBJS_PIANIFICATORE)
+	$(LD) -o $@ $(OBJS_PIANIFICATORE)
+
+bin/file_read: $(OBJS_FILE_READ)
+	$(LD) -o $@ $(OBJS_FILE_READ)
+
+bin/get_arg: $(OBJS_get_arg)
+	$(LD) -o $@ $(OBJS_get_arg)
+
+# Regole per gli oggetti
 obj/pianificatore.o: src/pianificatore.s
-	$(AS) $(FLAGS) -o obj/pianificatore.o src/pianificatore.s
+	$(AS) $(FLAGS) -o $@ $<
 
 obj/file_read.o: src/file_read.s
-	$(AS) $(FLAGS) -o obj/file_read.o src/file_read.s
+	$(AS) $(FLAGS) -o $@ $<
 
+obj/get_arg.o: src/get_arg.s
+	$(AS) $(FLAGS) -o $@ $<
+
+# Regola per pulire i file compilati
+.PHONY: clean
 clean:
-	rm -f *.o $(EXE) core
+	rm -f obj/*.o $(EXES) core
