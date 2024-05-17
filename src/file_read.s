@@ -1,98 +1,74 @@
 .section .data
-filename: .ascii "test.txt"    # Nome del file di testo da leggere
-fd: .int 0 # file descriptor
-buffer: .string ""       # Spazio per il buffer di input
-newline: .byte 10        # Valore del simbolo di nuova linea
-lines: .int 0            # Numero di linee 
+    filename:
+        .ascii "ordini.txt"
 
-n_args: .int 0
-f_arg: .long 0
-char_prt: .ascii  "-"
+file_descr:
+    .int 0
+buffer: .string ""
+newline: .byte 10
+lines: .int 0
 
-err: .ascii "Errore apertura file - \n"
-err_len: .long . - err
-
-done: .ascii "FILE aperto\n"
-done_len: .long . - done
-
+.section .bss
 
 .section .text
-.global _start
+    .globl _start
+
+# file opening
+
+_open:
+    movl $5, %eax
+    movl $filename, %ebx
+    movl $0, %ecx
+    int $0x80
+
+# error on file opening
+
+    cmp $0, %eax
+    jl _exit
+
+
+movl %eax, file_descr
+
+_read_loop:
+    movl $3, %eax
+    movl file_descr, %ebx
+    movl $buffer, %ecx
+    movl $1, %edx
+    int $0x80
+
+    # controllo errori file
+    cmp $0, %eax
+    jle _close_file 
+
+    # controllo se ho una nuova linea
+    movb buffer, %al
+    cmpb newline, %al 
+    jne _print_line
+    incw lines 
+
+
+_print_line:
+    movl $4, %eax
+    movl $1, %ebx
+    leal buffer, %ecx
+    movl $1, %edx
+    int $0x80
+
+    jmp _read_loop
+
+# file close 
+_close_file:
+    movl $6, %eax
+    xorl %ebx, %ebx
+    int $0x80
+
+    _exit:
+    mov $1, %eax       
+    xor %ebx, %ebx      
+    int $0x80
 
 _start:
+    jmp _open
 
-    mov $5, %eax        # syscall open
-    mov $filename, %ebx # Nome del file
-    mov $0, %ecx        # Modalità di apertura (O_RDONLY)
-    int $0x80           # Interruzione del kernel
-
-    test %eax, %eax
-    jz _exit
-    
-    mov %eax, fd      # Salva il file descriptor in fd
-
-    popl %edx
-    popl %edx
-
-    _args:
-
-    popl %ecx
-    xor %edx, %edx
-
-    test %ecx, %ecx
-    jz _done
-
-    loop:
-        movb (%ecx, %edx), %al
-        test %al, %al 
-        jz _args
-
-        inc %edx
-
-        pushl %edx
-        pushl %ecx
-        pushl %eax
-
-
-        movb %al, char_prt
-
-        leal char_prt, %ecx
-        ; movl $4, %ecx
-        ; movl %eax, %ecx # load character in ecx 
-        ; leal char_prt, %ecx    
-
-        movl $4, %eax
-        movl $1, %ebx
-        movl $1, %edx # lenght
-        int $0x80
-        
-        popl %eax
-        xor %eax, %eax
-
-        popl %ecx
-        popl %edx
-        
-        jmp loop
-
-
-_done:
-    movl $4, %eax
-    movl $1, %ebx
-    leal done, %ecx
-    movl done_len, %edx
-    int $0x80
-    movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
-
-
-
-_exit:
-    movl $4, %eax
-    movl $1, %ebx
-    leal err, %ecx
-    movl err_len, %edx
-    int $0x80
-    movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
+    # end 
+    jmp _exit    
