@@ -42,7 +42,7 @@ _start:
     leal fst_arg_len, %ebx
     call get_arg
 
-    movl 
+ 
 
     # Get second parameter
     movl $2, %ecx
