@@ -10,6 +10,9 @@ done: .ascii "Arg done\n"
 done_len: .long . - done
 str_len: .long 0
 
+input_add: .long 0
+input_add_len: .long 0
+
 # Dynamic variable section
 .section .bss
     arg_str: .string ""
@@ -31,6 +34,9 @@ str_len: .long 0
     
     get_arg:
 
+    movl %eax, input_add
+    movl %ebx, input_add_len
+
 	movl %esp, %ebp # Save stack pointer and base pointer
 
 	addl $4, %esp # Return to argument position, +4 after pushls
@@ -39,11 +45,6 @@ str_len: .long 0
     # If no argument, exit
     cmpl $0, (%esp)
     je _exit
-
-	#xor %ecx, %ecx
-
-	# movl $1, %ecx		# Simulate n_args as funztion parameter passed 
-
 check:
 	cmp $1, %ecx
 	jl dec_esp
@@ -64,51 +65,53 @@ continue:
     test %ecx, %ecx
     jz _exit
 
-    leal arg_str, %ebx
 
     # Iterate all argument character 
+    movl input_add, %ebx
     loop:
         movb (%ecx, %edx), %al
         test %al, %al 
         jz _done
-
-        movb %al, (%ebx, %edx)
+        
+        
+        movb  %al, (%ebx, %edx)
         inc %edx
         
         jmp loop
 	
 _done:
-    leal arg_str, %eax
-    movl %edx, str_len
-
-    movb $0, (%ebx, %edx) # Add terminator char to arg_str
-    # Print argument (for debugging)
-	movl $4, %eax 
-    movl $1, %ebx
-    leal arg_str, %ecx
-    movl %edx, %edx
-    int $0x80
-
-
-    movl $4, %eax
-    movl $1, %ebx
-    leal done, %ecx
-    movl done_len, %edx
-    int $0x80
+    #movb $0, (%ebx, %edx) # Add terminator char to arg_str
+    ## Print argument (for debugging)
+	#movl $4, %eax 
+    #movl $1, %ebx
+    #leal arg_str, %ecx
+    #movl %edx, %edx
+    #int $0x80
+#
+#
+    #movl $4, %eax
+    #movl $1, %ebx
+    #leal done, %ecx
+    #movl done_len, %edx
+    #int $0x80
     
     jmp finish
 
 
 _exit:
 
-    movl $4, %eax
-    movl $1, %ebx
-    leal err, %ecx
-    movl err_len, %edx
-    int $0x80
+    #movl $4, %eax
+    #movl $1, %ebx
+    #leal err, %ecx
+    #movl err_len, %edx
+    #int $0x80
 
     jmp finish
 
 finish:
+
+    movl input_add_len, %eax
+    movl %edx, (%eax)
     movl %ebp, %esp
+
     ret
