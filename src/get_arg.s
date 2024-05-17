@@ -8,6 +8,7 @@ err_len: .long . - err
 
 done: .ascii "Arg done\n"
 done_len: .long . - done
+str_len: .long 0
 
 # Dynamic variable section
 .section .bss
@@ -15,25 +16,33 @@ done_len: .long . - done
 
 
 .section .text
-.global _start
+.global get_arg 
 
-_start:
+# Questa funzione estrae il n-argomento (dove n è caricato nel registro %ecx)
+# e poi mette il risultato nell'indirizzo caricato in %eax, e, nell'indirizzo caricato, in %ebx la lunghezza di quest'ultimo
+#
+#Inputs:
+# @ %ecx: indice dell'argomento da estrarre (1-based)
+#Outputs:
+# @ %eax: indirizzo dove salvare la stringa
+# @ %ebx: indirizzo dove salvare la lunghezza
+# 
+.type get_arg, @function
+    
+    get_arg:
 
-	pushl %esp # Save stack pointer and base pointer
-	pushl %ebp
+	movl %esp, %ebp # Save stack pointer and base pointer
 
-	addl $8, %esp
-
-	popl %ecx # TODO in the main
-	popl %ecx # programm
+	addl $4, %esp # Return to argument position, +4 after pushls
+                   # +4 for the function call  
 
     # If no argument, exit
     cmpl $0, (%esp)
     je _exit
 
-	xor %ecx, %ecx
+	#xor %ecx, %ecx
 
-	movl $1, %ecx		# Simulate n_args as funztion parameter passed 
+	# movl $1, %ecx		# Simulate n_args as funztion parameter passed 
 
 check:
 	cmp $1, %ecx
@@ -69,6 +78,8 @@ continue:
         jmp loop
 	
 _done:
+    leal arg_str, %eax
+    movl %edx, str_len
 
     movb $0, (%ebx, %edx) # Add terminator char to arg_str
     # Print argument (for debugging)
@@ -84,10 +95,8 @@ _done:
     leal done, %ecx
     movl done_len, %edx
     int $0x80
-    movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
-
+    
+    jmp finish
 
 
 _exit:
@@ -98,7 +107,8 @@ _exit:
     movl err_len, %edx
     int $0x80
 
-	
-    movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
+    jmp finish
+
+finish:
+    movl %ebp, %esp
+    ret

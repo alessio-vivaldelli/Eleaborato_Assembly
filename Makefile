@@ -18,8 +18,8 @@ dirs:
 	mkdir -p bin obj
 
 # Regole per gli eseguibili
-bin/pianificatore: $(OBJS_PIANIFICATORE)
-	$(LD) -o $@ $(OBJS_PIANIFICATORE)
+bin/pianificatore: $(OBJS_PIANIFICATORE) $(OBJS_get_arg)
+	$(LD) $(OBJS_get_arg) $(OBJS_PIANIFICATORE) -o $@
 
 bin/file_read: $(OBJS_FILE_READ)
 	$(LD) -o $@ $(OBJS_FILE_READ)
