@@ -1,10 +1,16 @@
 .section .data
     filename:
-        .ascii "ordini.txt"
+        .ascii "/home/alessio/Documents/Architettura/ASSEMBLY/Eleaborato/Ordini/atoi_test.txt"
 
 file_descr:
     .int 0
 buffer: .string ""
+num_buffer: .string ""
+num_int: .int 0
+
+num: .int 0
+
+line_len: .int 0
 newline: .byte 10
 lines: .int 0
 
@@ -16,18 +22,22 @@ lines: .int 0
 # file opening
 
 _open:
-    movl $5, %eax
-    movl $filename, %ebx
-    movl $0, %ecx
+
+    movl $5, %eax # Open file
+    movl $filename, %ebx # Filename
+    movl $0, %ecx  # 'r' mode
     int $0x80
 
-# error on file opening
+    # 44 -> ','
 
+    # error on file opening
     cmp $0, %eax
     jl _exit
 
 
 movl %eax, file_descr
+
+pushl $0
 
 _read_loop:
     movl $3, %eax
@@ -43,21 +53,21 @@ _read_loop:
     # controllo se ho una nuova linea
     movb buffer, %al
     cmpb newline, %al 
-    jne _print_line
-    incw lines 
+
+    cmpb $44, %al
+    je new_num
+    cmpb $10, %al
+    je new_num
+    cmpb $3, %al
+    je new_num
 
 
-_print_line:
-    movl $4, %eax
-    movl $1, %ebx
-    leal buffer, %ecx
-    movl $1, %edx
-    int $0x80
+    jmp atoi_num1
 
-    jmp _read_loop
-
+    
 # file close 
 _close_file:
+
     movl $6, %eax
     xorl %ebx, %ebx
     int $0x80
@@ -72,3 +82,41 @@ _start:
 
     # end 
     jmp _exit    
+
+
+atoi_num1:  				
+
+    leal buffer, %esi 		# metto indirizzo della stringa in esi 
+
+
+    xorl %eax,%eax			# Azzero registri General Purpose
+    xorl %ebx,%ebx           
+    xorl %ecx,%ecx           
+    xorl %edx,%edx
+    
+
+    movb (%ecx,%esi,1), %bl
+
+    cmp $10, %bl             # vedo se e' stato letto il carattere '\n'
+    je fine_atoi1
+
+    subb $48, %bl            # converte il codice ASCII della cifra nel numero corrisp.
+
+
+
+    fine_atoi1:
+        xor %eax, %eax
+        popl %eax
+        movl $10, %ecx 
+        mulb %cl    # -> eax = eax*10
+
+        addl %ebx, %eax # eax + bl
+        pushl %eax
+
+        jmp _read_loop
+        
+
+
+new_num:
+    pushl $0
+    jmp _read_loop

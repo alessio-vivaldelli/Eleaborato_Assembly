@@ -37,7 +37,7 @@ input_add_len: .long 0
     movl %eax, input_add
     movl %ebx, input_add_len
 
-	movl %esp, %ebp # Save stack pointer and base pointer
+	movl %esp, %ebp # Save stack pointer 
 
 	addl $4, %esp # Return to argument position, +4 after pushls
                    # +4 for the function call  

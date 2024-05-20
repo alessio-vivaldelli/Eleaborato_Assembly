@@ -30,7 +30,7 @@ snd_arg_len: .long 0
 _start:
 
     movl (%esp), %edx
-    movl %edx, num_arg # Contiene il valore arg_c "Non è salvato come stringa ma comstr_lene decimale"
+    movl %edx, num_arg # Contiene il valore arg_c "Non è salvato come stringa ma come decimale"
     xorl %edx, %edx
 
     popl %ecx # Remove program path
@@ -41,6 +41,8 @@ _start:
     leal fst_arg, %eax
     leal fst_arg_len, %ebx
     call get_arg
+
+
 
  
 
