@@ -17,11 +17,16 @@ lines: .int 0
 .section .bss
 
 .section .text
-    .globl _start
+    .globl read_file
 
 # file opening
 
-_open:
+# L'indirizzo del file path si trova in ebx
+.type read_file, @function
+    
+read_file:
+    movl (%esp), %ebp
+    popl %eax
 
     movl $5, %eax # Open file
     movl $filename, %ebx # Filename
@@ -73,15 +78,9 @@ _close_file:
     int $0x80
 
     _exit:
-    mov $1, %eax       
-    xor %ebx, %ebx      
-    int $0x80
-
-_start:
-    jmp _open
-
-    # end 
-    jmp _exit    
+    pushl %ebp
+    
+    ret
 
 
 atoi_num1:  				

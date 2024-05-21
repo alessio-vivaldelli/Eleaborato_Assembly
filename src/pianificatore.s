@@ -1,5 +1,9 @@
 .section .data # sezione variabili globali
 
+str_algo: .ascii "1"
+str_algo_len: .long . - str_algo
+
+
 menu: .ascii "Selezionare l'algoritmo che si vuole utilizzare\n[1]->EDF\n[2]->HPF\n>" #stringa costante
 menu_len: .long . - menu 
 
@@ -19,7 +23,6 @@ snd_arg_len: .long 0
 
 # Dynamic variable section
 .section .bss
-    str_algo: .string ""
     fst_arg: .string ""
     snd_arg: .string ""
 .section .text
@@ -42,15 +45,17 @@ _start:
     leal fst_arg_len, %ebx
     call get_arg
 
-
-
- 
-
     # Get second parameter
     movl $2, %ecx
     leal snd_arg, %eax
     leal snd_arg_len, %ebx
     call get_arg
+
+
+    leal fst_arg, %ebx
+    call read_file
+    movl $0, %ebp
+
 
 
     movl $4, %eax # metto in EAX il codice della system call WRITE.
@@ -59,11 +64,14 @@ _start:
     movl menu_len, %edx # carico il valore di hello nel registro EDX
     int $0x80 # Lancia l'interrupt generico 0x80 per eseguire quello che ho scritto. controlla i valori di eax,ebx e ecx quindi capisce di stampare
 
-    movl $3, %eax         # Set system call READ
-    movl $0, %ebx         # | <- keyboard
-    leal str_algo, %ecx   # | <- destination
-    movl $50, %edx        # | <- string length
-    int $0x80             # Execute syscall
+    #scanf
+    movl $3, %eax
+    movl $1, %ebx
+    leal str_algo, %ecx
+    movl str_algo_len, %edx
+    incl %edx
+    int $0x80
+
 
     leal str_algo, %esi
     movb (%esi), %bl

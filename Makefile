@@ -6,6 +6,8 @@ FLAGS=-gstabs
 OBJS_PIANIFICATORE=obj/pianificatore.o
 OBJS_FILE_READ=obj/file_read.o
 OBJS_get_arg=obj/get_arg.o
+OBJS_read_file=obj/file_read.o
+
 GCC=gcc
 
 # Regole per creare le directory necessarie
@@ -18,8 +20,8 @@ dirs:
 	mkdir -p bin obj
 
 # Regole per gli eseguibili
-bin/pianificatore: $(OBJS_PIANIFICATORE) $(OBJS_get_arg)
-	$(LD) $(OBJS_get_arg) $(OBJS_PIANIFICATORE) -o $@
+bin/pianificatore: $(OBJS_PIANIFICATORE) $(OBJS_get_arg) $(OBJS_read_file)
+	$(LD) $(OBJS_read_file) $(OBJS_get_arg) $(OBJS_PIANIFICATORE) -o $@
 
 bin/file_read: $(OBJS_FILE_READ)
 	$(LD) -o $@ $(OBJS_FILE_READ)
