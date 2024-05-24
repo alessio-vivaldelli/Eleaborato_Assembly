@@ -1,7 +1,7 @@
 .section .data
 
 car: .byte 0			# la variabile car e' dichiarata di tipo byte
-
+stream: .int 1
 .section .text
 	.global itoa
 
@@ -9,8 +9,10 @@ car: .byte 0			# la variabile car e' dichiarata di tipo byte
 							# converte un intero in una stringa
 							# il numero da convertire deve essere
 							# stato caricato nel registro %eax
+							# Lo tream è caricato in ebx
 
-itoa:   
+itoa:  
+	movl %ebx, stream
 	movl   $0, %ecx		# carica il numero 0 in %ecx
 
 
@@ -85,9 +87,9 @@ stampa:
 						# operativo write
 
 	movl   $4, %eax
-	movl   $1, %ebx
+	movl   stream, %ebx
 	leal  car, %ecx		
-	movb    $1, %edx
+	movl    $1, %edx
 	int $0x80
 
 	popw   %bx			# recupera il contatore dei caratteri da 
@@ -103,15 +105,5 @@ stampa:
 
 
 fine_itoa:
-
-	movb  $10, car		# copia nella variabile car il codice ascii 
-						# del carattere line feed (per andare a 
-						# capo riga)
-
-	movl   $4, %eax
-	movl   $1, %ebx
-	leal  car, %ecx
-	mov    $1, %edx
-	int $0x80
 
 	ret

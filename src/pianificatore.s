@@ -7,10 +7,10 @@ str_algo_len: .long . - str_algo
 menu: .ascii "Selezionare l'algoritmo che si vuole utilizzare\n[1]->EDF\n[2]->HPF\n>" #stringa costante
 menu_len: .long . - menu 
 
-EDF_print: .ascii "Usiamo EDF\n"
+EDF_print: .ascii "Pianificazione EDF:\n"
 EDF_len: .long . - EDF_print 
 
-HPF_print: .ascii "Usiamo HPF\n"
+HPF_print: .ascii "Pianificazione HPF:\n"
 HPF_len: .long . - HPF_print 
 
 ALGO: .long 0
@@ -27,15 +27,6 @@ finish_len: .long . - finish_print_str
 
 algo_function: .long 0
 switch_flag: .int 0
-
-id_print: .ascii "ID: " 
-id_len: .long . - id_print 
-durata_print: .ascii ", Durata: " 
-durata_len: .long . - durata_print 
-scad_print: .ascii ", Scadenza: " 
-scad_len: .long . - scad_print 
-priority_print: .ascii ", Priorita: " 
-priority_len: .long . - priority_print 
 
 tmp: .ascii " "
 
@@ -74,7 +65,7 @@ _start:
     call read_file
     movl $0, %ebp
 
-
+main_loop:
 
     movl $4, %eax # metto in EAX il codice della system call WRITE.
     movl $1, %ebx # Metti in EBX il file descritto del stdout. "Stream di output 1"
@@ -142,18 +133,12 @@ reset_ebp:
 
     movl switch_flag, %ecx
     cmp $0, %ecx
-    je continue
+    je end_sorting
 
     movl $0, switch_flag # Reset flag for bubble sort
 
     jmp print_vals
 
-
-continue:
-    # EXIT
-	movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
 
 
 
@@ -194,4 +179,19 @@ EDF_compare_AND:
     jmp continue_sort
 
 
+
+end_sorting:
+
+    leal snd_arg, %ebx
+    movl snd_arg_len, %ecx
+
+    call output
+    jmp main_loop
+
+
+_exit:
+    # EXIT
+	movl $1, %eax         # Set system call EXIT
+	xorl %ebx, %ebx       # | <- no error (0)
+	int $0x80             # Execute syscall
 
