@@ -21,6 +21,24 @@ new_line_char: .byte 10
 fst_arg_len: .long 0
 snd_arg_len: .long 0
 
+finish_print_str: .ascii "Finish\n"
+finish_len: .long . - finish_print_str
+
+
+algo_function: .long 0
+switch_flag: .int 0
+
+id_print: .ascii "ID: " 
+id_len: .long . - id_print 
+durata_print: .ascii ", Durata: " 
+durata_len: .long . - durata_print 
+scad_print: .ascii ", Scadenza: " 
+scad_len: .long . - scad_print 
+priority_print: .ascii ", Priorita: " 
+priority_len: .long . - priority_print 
+
+tmp: .ascii " "
+
 # Dynamic variable section
 .section .bss
     fst_arg: .string ""
@@ -72,30 +90,63 @@ _start:
     incl %edx
     int $0x80
 
-
     leal str_algo, %esi
     movb (%esi), %bl
     cmp $49, %bl
     
-    je EDF_algo
-    jne HPF_algo
+    movl %esp, %ebp
 
-EDF_algo:
+    je EDF_debug_print
+    jne HPF_debug_print
+    
+
+print_vals:
+
+    movl 16(%ebp), %eax
+    cmp $-1, %eax
+    je reset_ebp
+
+    movl ALGO, %ecx
+    cmp $1, %ecx
+    je EDF_compare
+    jmp HPF_compare
+
+continue_sort:
+    addl $16, %ebp
+    jmp print_vals
+
+
+EDF_debug_print:
     movl $4, %eax # metto in EAX il codice della system call WRITE.
     movl $1, %ebx # Metti in EBX il file descritto del stdout. "Stream di output 1"
     leal EDF_print, %ecx # Metto in ECX (deciso dalla documentazione), i'indirizzo di inizio della stringa. Si in questo registro l'indirizzo di quello che vogliamo stampare
     movl EDF_len, %edx # carico il valore di hello nel registro EDX
     int $0x80 # Lancia l'interrupt generico 0x80 per eseguire quello che ho scritto. controlla i valori di eax,ebx e ecx quindi capisce di stampare
+    
     movl $1, ALGO
-    jmp continue
-HPF_algo:
+
+    jmp print_vals
+HPF_debug_print:
     movl $4, %eax # metto in EAX il codice della system call WRITE.
     movl $1, %ebx # Metti in EBX il file descritto del stdout. "Stream di output 1"
     leal HPF_print, %ecx # Metto in ECX (deciso dalla documentazione), i'indirizzo di inizio della stringa. Si in questo registro l'indirizzo di quello che vogliamo stampare
     movl HPF_len, %edx # carico il valore di hello nel registro EDX
     int $0x80 # Lancia l'interrupt generico 0x80 per eseguire quello che ho scritto. controlla i valori di eax,ebx e ecx quindi capisce di stampare
+    
     movl $2, ALGO
-    jmp continue
+
+    jmp print_vals
+
+reset_ebp:
+    movl %esp, %ebp
+
+    movl switch_flag, %ecx
+    cmp $0, %ecx
+    je continue
+
+    movl $0, switch_flag # Reset flag for bubble sort
+
+    jmp print_vals
 
 
 continue:
@@ -103,3 +154,44 @@ continue:
 	movl $1, %eax         # Set system call EXIT
 	xorl %ebx, %ebx       # | <- no error (0)
 	int $0x80             # Execute syscall
+
+
+
+EDF_compare:
+    movl 20(%ebp), %ebx
+    cmp 4(%ebp), %ebx
+    jl switch_tag
+    je EDF_compare_AND
+
+    jmp continue_sort
+
+HPF_compare:
+    movl 16(%ebp), %ebx
+    cmp (%ebp), %ebx
+    jg switch_tag
+    je HPF_compare_AND
+
+    jmp continue_sort
+HPF_compare_AND:
+    movl 20(%ebp), %ebx
+    cmp 4(%ebp), %ebx
+    jl switch_tag
+
+    jmp continue_sort
+
+
+switch_tag:
+    movl $1, switch_flag
+    call swap
+    jmp continue_sort
+
+EDF_compare_AND:
+
+    movl 16(%ebp), %ebx
+    cmp (%ebp), %ebx
+    jg switch_tag
+
+    jmp continue_sort
+
+
+

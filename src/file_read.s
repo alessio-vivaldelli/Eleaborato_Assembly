@@ -27,9 +27,10 @@ lines: .int 0
 read_file:
     movl (%esp), %ebp
     popl %eax
-
+    movl $-1, (%esp)
+    
     movl $5, %eax # Open file
-    movl $filename, %ebx # Filename
+    #movl $filename, %ebx # Filename
     movl $0, %ecx  # 'r' mode
     int $0x80
 
