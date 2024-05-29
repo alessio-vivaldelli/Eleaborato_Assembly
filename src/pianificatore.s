@@ -16,24 +16,17 @@ HPF_len: .long . - HPF_print
 ALGO: .long 0
 num_arg: .long 0
 
-new_line_char: .byte 10
-
-fst_arg_len: .long 0
-snd_arg_len: .long 0
 
 finish_print_str: .ascii "Finish\n"
 finish_len: .long . - finish_print_str
 
-
-algo_function: .long 0
 switch_flag: .int 0
 
-tmp: .ascii " "
 
-# Dynamic variable section
-.section .bss
-    fst_arg: .string ""
-    snd_arg: .string ""
+fst_arg: .long 0
+snd_arg: .long 0
+
+
 .section .text
 .align 4
 
@@ -43,25 +36,26 @@ _start:
 
     movl (%esp), %edx
     movl %edx, num_arg # Contiene il valore arg_c "Non è salvato come stringa ma come decimale"
-    xorl %edx, %edx
+    cmp $1, %edx
+    jle _exit
 
     popl %ecx # Remove program path
 	popl %ecx # and number of args from stack
 
-    # Ges first parameter
-    movl $1, %ecx
-    leal fst_arg, %eax
-    leal fst_arg_len, %ebx
-    call get_arg
 
-    # Get second parameter
-    movl $2, %ecx
-    leal snd_arg, %eax
-    leal snd_arg_len, %ebx
-    call get_arg
+    popl %ecx
+    movl %ecx, fst_arg
+
+    cmp $3, %edx
+    jne read_orders
+    popl %ecx
+    movl %ecx, snd_arg
 
 
-    leal fst_arg, %ebx
+read_orders:
+    xorl %edx, %edx
+
+    movl fst_arg, %ebx
     call read_file
     movl $0, %ebp
 
@@ -182,8 +176,7 @@ EDF_compare_AND:
 
 end_sorting:
 
-    leal snd_arg, %ebx
-    movl snd_arg_len, %ecx
+    movl snd_arg, %ebx
 
     call output
     jmp main_loop

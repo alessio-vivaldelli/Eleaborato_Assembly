@@ -1,6 +1,7 @@
 .section .data
 
-new: .byte 10	
+new: .byte 10
+sep: .byte 58
 
 fd: .int 1
 time: .int 0
@@ -24,14 +25,15 @@ Penality_len: .long . - Penality_str
 # Questa funzione fa lo switch di due ordini direttamente sullo stack
 #Inputs:
 # @ %ebx: punta alla stringa del secondo argomento del programma
-# @ %ecx: punta alla lunghezza della stringa del parametro
 #
 # Note: usare EBP per iterare l'array di valori
 .type output, @function
 output:
-    cmp $0, %ecx
+    cmp $0, %ebx
     jne _open
-
+    
+    pushl %ebp
+continue:
     print_vals:
 
         movl (%ebp), %eax
@@ -45,7 +47,7 @@ output:
         # Stampa ':'
         movl $4, %eax 
         movl fd, %ebx 
-        movb $58, %cl 
+        leal sep, %ecx 
         movl $1, %edx
         int $0x80
         # Stampa time
@@ -55,7 +57,7 @@ output:
         # Stampa '\n'
         movl $4, %eax 
         movl fd, %ebx 
-        movl new, %ecx 
+        leal new, %ecx 
         movl $1, %edx
         int $0x80
 
@@ -83,6 +85,8 @@ calc_penality:
     addl %eax, %ecx
     movl %ecx, penality
 
+    jmp continue_sort
+
 
 _end:
     movl fd, %eax
@@ -102,7 +106,7 @@ _continue_end:
     # New Line
     movl $4, %eax 
     movl fd, %ebx 
-    movb $10, %cl 
+    leal new, %ecx 
     movl $1, %edx
     int $0x80
 
@@ -120,9 +124,14 @@ _continue_end:
     # New Line
     movl $4, %eax 
     movl fd, %ebx 
-    movb $10, %cl 
+    leal new, %ecx
     movl $1, %edx
     int $0x80
+
+    popl %ebp
+
+    movl $0, time
+    movl $0, penality
 
     ret
 
@@ -136,7 +145,7 @@ close_file:
 _open:
     mov $5, %eax        # syscall open
     # EBX contiene gia l'indirizzo della stringa 
-    mov $1, %ecx        # Modalità di apertura (O_WRONLY)
+    mov $1, %ecx        # Modalità di apertura (O_WRONLY)-> 1 O_APPEND-> 1024
     int $0x80           # Interruzione del kernel
 
     # Se c'è un errore, esce
@@ -144,7 +153,7 @@ _open:
     jl _exit
 
     mov %eax, fd      # Salva il file descriptor in ebx
-
+    jmp continue
 
 _exit:
     movl $4, %eax 

@@ -13,10 +13,6 @@ str_len: .long 0
 input_add: .long 0
 input_add_len: .long 0
 
-# Dynamic variable section
-.section .bss
-    arg_str: .string ""
-
 
 .section .text
 .global get_arg 
@@ -39,8 +35,8 @@ input_add_len: .long 0
 
 	movl %esp, %ebp # Save stack pointer 
 
-	addl $4, %esp # Return to argument position, +4 after pushls
-                   # +4 for the function call  
+	addl $4, %esp  # +4 for the function call  
+                   
 
     # If no argument, exit
     cmpl $0, (%esp)
@@ -65,7 +61,10 @@ continue:
     test %ecx, %ecx
     jz _exit
 
-
+    movl input_add, %eax
+    movl %ecx, (%eax)
+    xor %eax, %eax
+    
     # Iterate all argument character 
     movl input_add, %ebx
     loop:
@@ -80,38 +79,18 @@ continue:
         jmp loop
 	
 _done:
-    #movb $0, (%ebx, %edx) # Add terminator char to arg_str
-    ## Print argument (for debugging)
-	#movl $4, %eax 
-    #movl $1, %ebx
-    #leal arg_str, %ecx
-    #movl %edx, %edx
-    #int $0x80
-#
-#
-    #movl $4, %eax
-    #movl $1, %ebx
-    #leal done, %ecx
-    #movl done_len, %edx
-    #int $0x80
-    
+
     jmp finish
 
 
 _exit:
-
-    #movl $4, %eax
-    #movl $1, %ebx
-    #leal err, %ecx
-    #movl err_len, %edx
-    #int $0x80
-
     jmp finish
 
 finish:
 
     movl input_add_len, %eax
     movl %edx, (%eax)
+
     movl %ebp, %esp
 
     ret

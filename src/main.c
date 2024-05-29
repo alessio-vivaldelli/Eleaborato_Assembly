@@ -102,7 +102,8 @@ void computeOrders(Order *orders, int len){
 
 }
 
-
+#include <fcntl.h>   // Necessario per O_WRONLY e le altre opzioni di apertura
+O_WRONLY
 
 
 Order *orderOrders(Order *orders, enum ALGO algo, int num)

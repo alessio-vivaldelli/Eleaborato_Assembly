@@ -1,6 +1,9 @@
 .section .data
 
 car: .byte 0			# la variabile car e' dichiarata di tipo byte
+new: .byte 10
+sep: .byte 10
+
 stream: .int 1
 .section .text
 	.global itoa

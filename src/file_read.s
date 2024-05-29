@@ -38,7 +38,7 @@ read_file:
 
     # error on file opening
     cmp $0, %eax
-    jl _exit
+    jl error
 
 
 movl %eax, file_descr
@@ -120,3 +120,9 @@ atoi_num1:
 new_num:
     pushl $0
     jmp _read_loop
+
+
+error:
+	movl $1, %eax         # Set system call EXIT
+	xorl %ebx, %ebx       # | <- no error (0)
+	int $0x80             # Execute syscall
