@@ -42,7 +42,6 @@ _start:
     popl %ecx # Remove program path
 	popl %ecx # and number of args from stack
 
-
     popl %ecx
     movl %ecx, fst_arg
 
@@ -101,25 +100,11 @@ continue_sort:
     jmp print_vals
 
 
-EDF_debug_print:
-    movl $4, %eax # metto in EAX il codice della system call WRITE.
-    movl $1, %ebx # Metti in EBX il file descritto del stdout. "Stream di output 1"
-    leal EDF_print, %ecx # Metto in ECX (deciso dalla documentazione), i'indirizzo di inizio della stringa. Si in questo registro l'indirizzo di quello che vogliamo stampare
-    movl EDF_len, %edx # carico il valore di hello nel registro EDX
-    int $0x80 # Lancia l'interrupt generico 0x80 per eseguire quello che ho scritto. controlla i valori di eax,ebx e ecx quindi capisce di stampare
-    
+EDF_debug_print:    
     movl $1, ALGO
-
     jmp print_vals
-HPF_debug_print:
-    movl $4, %eax # metto in EAX il codice della system call WRITE.
-    movl $1, %ebx # Metti in EBX il file descritto del stdout. "Stream di output 1"
-    leal HPF_print, %ecx # Metto in ECX (deciso dalla documentazione), i'indirizzo di inizio della stringa. Si in questo registro l'indirizzo di quello che vogliamo stampare
-    movl HPF_len, %edx # carico il valore di hello nel registro EDX
-    int $0x80 # Lancia l'interrupt generico 0x80 per eseguire quello che ho scritto. controlla i valori di eax,ebx e ecx quindi capisce di stampare
-    
+HPF_debug_print:    
     movl $2, ALGO
-
     jmp print_vals
 
 reset_ebp:
@@ -177,6 +162,7 @@ EDF_compare_AND:
 end_sorting:
 
     movl snd_arg, %ebx
+    movl ALGO, %eax
 
     call output
     jmp main_loop

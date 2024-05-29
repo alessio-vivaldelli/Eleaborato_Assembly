@@ -1,5 +1,9 @@
 .section .data
+EDF_print: .ascii "Pianificazione EDF:\n"
+EDF_len: .long . - EDF_print 
 
+HPF_print: .ascii "Pianificazione HPF:\n"
+HPF_len: .long . - HPF_print 
 new: .byte 10
 sep: .byte 58
 
@@ -19,6 +23,7 @@ Conclusione_len: .long . - Conclusione
 Penality_str: .ascii "Penality: "
 Penality_len: .long . - Penality_str
 
+algo: .int 0
 .section .text
 .global output
 
@@ -29,16 +34,23 @@ Penality_len: .long . - Penality_str
 # Note: usare EBP per iterare l'array di valori
 .type output, @function
 output:
+    movl %eax, algo
     cmp $0, %ebx
     jne _open
-    
-    pushl %ebp
+
 continue:
+    pushl %ebp
+
+    movl algo, %eax
+    cmp $1, %eax
+    je EDF
+    jne HPF
+
     print_vals:
 
         movl (%ebp), %eax
         cmp $-1, %eax
-        je _end
+        je _continue_end
 
         # Stampa ID
         movl  fd, %ebx
@@ -55,8 +67,8 @@ continue:
         movl time, %eax
         call itoa
         # Stampa '\n'
-        movl $4, %eax 
-        movl fd, %ebx 
+        movl $4, %eax # sys_write
+        movl fd, %ebx  # stram: 1 (stdout), file-descriptor
         leal new, %ecx 
         movl $1, %edx
         int $0x80
@@ -87,11 +99,9 @@ calc_penality:
 
     jmp continue_sort
 
-
 _end:
-    movl fd, %eax
-    cmp $1, %eax
-    jne close_file
+
+    
 _continue_end:
     # Print conclusione: .. .. 
     movl $4, %eax 
@@ -110,7 +120,6 @@ _continue_end:
     movl $1, %edx
     int $0x80
 
-
     # Print conclusione: .. .. 
     movl $4, %eax 
     movl fd, %ebx 
@@ -128,8 +137,12 @@ _continue_end:
     movl $1, %edx
     int $0x80
 
-    popl %ebp
+    movl fd, %eax
+    cmp $1, %eax
+    jne close_file
 
+ret_function:
+    popl %ebp
     movl $0, time
     movl $0, penality
 
@@ -140,13 +153,15 @@ close_file:
     movl $6, %eax        # syscall close
     movl fd, %ecx      # File descriptor
     int $0x80           # Interruzione del kernel
-    jmp _continue_end
+    jmp ret_function
 
 _open:
     mov $5, %eax        # syscall open
     # EBX contiene gia l'indirizzo della stringa 
-    mov $1, %ecx        # Modalità di apertura (O_WRONLY)-> 1 O_APPEND-> 1024
+    movl $1089, %ecx        # Modalità di apertura (O_WRONLY)-> 1 O_APPEND-> 1024. O_WRONLY|O_CREAT|O_APPEND -> 1089 (1+64+1024)
+    movl $0644, %edx
     int $0x80           # Interruzione del kernel
+    
 
     # Se c'è un errore, esce
     cmp $0, %eax
@@ -168,3 +183,21 @@ _exit:
 	int $0x80             # Execute syscall
 
     ret
+
+EDF:
+    movl $4, %eax 
+    movl fd, %ebx 
+    leal EDF_print, %ecx 
+    movl EDF_len, %edx 
+    int $0x80 
+
+    jmp print_vals
+
+HPF:
+    movl $4, %eax 
+    movl fd, %ebx 
+    leal HPF_print, %ecx 
+    movl HPF_len, %edx 
+    int $0x80 
+
+    jmp print_vals

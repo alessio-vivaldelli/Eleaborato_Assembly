@@ -11,3 +11,16 @@ Pianificazione EDF:
 3:53
 Conclusione: 55
 Penality: 29
+Pianificazione HPF:
+15:0
+6:4
+1:14
+7:19
+3:20
+29:22
+4:28
+50:35
+9:43
+23:46
+Conclusione: 55
+Penality: 12
