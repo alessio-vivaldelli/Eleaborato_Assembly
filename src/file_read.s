@@ -123,6 +123,5 @@ new_num:
 
 
 error:
-	movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
+    movl $1, %eax
+    call error_handle

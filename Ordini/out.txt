@@ -11,3 +11,5 @@ Pianificazione EDF:
 3:53
 Conclusione: 55
 Penality: 29
+Pianificazione EDF:
+1:

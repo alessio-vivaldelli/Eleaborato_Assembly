@@ -37,7 +37,7 @@ _start:
     movl (%esp), %edx
     movl %edx, num_arg # Contiene il valore arg_c "Non è salvato come stringa ma come decimale"
     cmp $1, %edx
-    jle _exit
+    jle no_arg
 
     popl %ecx # Remove program path
 	popl %ecx # and number of args from stack
@@ -74,14 +74,17 @@ main_loop:
     incl %edx
     int $0x80
 
+    # Sezione che prende il valore che decide l'algoritmo da usare
     leal str_algo, %esi
     movb (%esi), %bl
     cmp $49, %bl
-    
     movl %esp, %ebp
-
     je EDF_debug_print
-    jne HPF_debug_print
+
+    cmp $50, %bl
+    je HPF_debug_print
+    jne algo_error
+
     
 
 print_vals:
@@ -120,7 +123,7 @@ reset_ebp:
 
 
 
-
+    
 EDF_compare:
     movl 20(%ebp), %ebx
     cmp 4(%ebp), %ebx
@@ -168,9 +171,11 @@ end_sorting:
     jmp main_loop
 
 
-_exit:
-    # EXIT
-	movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
+no_arg:
+    movl $3, %eax
+    call error_handle
 
+algo_error:
+    movl $2, %eax
+    call error_handle
+    jmp main_loop

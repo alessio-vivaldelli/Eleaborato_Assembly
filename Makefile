@@ -10,6 +10,7 @@ OBJS_read_file=obj/file_read.o
 OBJS_swap=obj/swap.o
 OBJS_itoa=obj/itoa.o
 OBJS_output=obj/output.o
+OBJS_errs=obj/handle_errs.o
 GCC=gcc
 
 # Regole per creare le directory necessarie
@@ -22,14 +23,11 @@ dirs:
 	mkdir -p bin obj
 
 # Regole per gli eseguibili
-bin/pianificatore: $(OBJS_PIANIFICATORE) $(OBJS_get_arg) $(OBJS_read_file) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output)
-	$(LD) $(OBJS_read_file) $(OBJS_get_arg) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output) $(OBJS_PIANIFICATORE) -o $@
+bin/pianificatore: $(OBJS_PIANIFICATORE) $(OBJS_get_arg) $(OBJS_read_file) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output) $(OBJS_errs)
+	$(LD) $(OBJS_read_file) $(OBJS_get_arg) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output) $(OBJS_errs) $(OBJS_PIANIFICATORE) -o $@
 
-bin/file_read: $(OBJS_FILE_READ)
-	$(LD) -o $@ $(OBJS_FILE_READ)
-
-bin/get_arg: $(OBJS_get_arg)
-	$(LD) -o $@ $(OBJS_get_arg)
+bin/file_read: $(OBJS_FILE_READ) $(OBJS_errs)
+	$(LD) -o $@ $(OBJS_FILE_READ) $(OBJS_errs)
 
 bin/swap: $(OBJS_swap)
 	$(LD) -o $@ $(OBJS_swap)
@@ -37,10 +35,16 @@ bin/swap: $(OBJS_swap)
 bin/itoa: $(OBJS_itoa)
 	$(LD) -o $@ $(OBJS_itoa)
 
-bin/output: $(OBJS_output)
-	$(LD) -o $@ $(OBJS_output)
+bin/output: $(OBJS_output) $(OBJS_errs)
+	$(LD) -o $@ $(OBJS_output) $(OBJS_errs)
+
+bin/handle_errs: $(OBJS_errs)
+	$(LD) -o $@ $(OBJS_errs)
 
 # Regole per gli oggetti
+obj/handle_errs.o: src/handle_errs.s
+	$(AS) $(FLAGS) -o $@ $<
+
 obj/output.o: src/output.s
 	$(AS) $(FLAGS) -o $@ $<
 
@@ -53,8 +57,6 @@ obj/pianificatore.o: src/pianificatore.s
 obj/file_read.o: src/file_read.s
 	$(AS) $(FLAGS) -o $@ $<
 
-obj/get_arg.o: src/get_arg.s
-	$(AS) $(FLAGS) -o $@ $<
 
 obj/swap.o: src/swap.s
 	$(AS) $(FLAGS) -o $@ $<

@@ -91,11 +91,11 @@ continue:
 
 calc_penality:
     movl (%ebp), %ecx # -> carico la priorita dell'ordine in ECX
-    mul %cl
+    mull %ecx
 
-    movl penality, %eax
-    addl %eax, %ecx
-    movl %ecx, penality
+    movl penality, %edx
+    addl %edx, %eax
+    movl %eax, penality
 
     jmp continue_sort
 
@@ -165,24 +165,16 @@ _open:
 
     # Se c'è un errore, esce
     cmp $0, %eax
-    jl _exit
+    jl err
 
     mov %eax, fd      # Salva il file descriptor in ebx
     jmp continue
 
-_exit:
-    movl $4, %eax 
-    movl $2, %ebx 
-    leal err_str, %ecx 
-    movl err_len, %edx
-    int $0x80
+err:
+    movl $4, %eax
+    call error_handle
 
-    # EXIT
-	movl $1, %eax         # Set system call EXIT
-	xorl %ebx, %ebx       # | <- no error (0)
-	int $0x80             # Execute syscall
-
-    ret
+    jmp continue
 
 EDF:
     movl $4, %eax 

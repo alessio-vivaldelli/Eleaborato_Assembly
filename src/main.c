@@ -39,8 +39,8 @@ int main(int argc, char* argv[])
     FILE *fid;
     Order *orders; int ordersNum;
 
-    fid = fopen(filename, "r");
-    if(!fid){return 1;}
+    fid = fopen("/home/alessio/Documents/Architettura/ASSEMBLY/Eleaborato/Ordini/EDF_no_penality.txt", "r");
+    if(!fid){printf("Error in file\n");return 1;}
 
     orders = getOrders(fid, &ordersNum);
     
@@ -141,7 +141,7 @@ int EDF_compare(Order order_1, Order order_2)
 int HPF_compare(Order order_1, Order order_2)
 {
     if(order_1.priority < order_2.priority){return 1;}
-    else if((order_1.priority == order_2.priority) && order_1.scadenza < order_2.scadenza){return 2;}
+    else if((order_1.priority == order_2.priority) && (order_1.scadenza >    order_2.scadenza)){return 2;}
     else{return 0;}
 }
 
@@ -201,7 +201,7 @@ char *options(enum ALGO *algo){
         file = "EDF_penality.txt";
         break;
     case 4:
-        file = "EDF_no_penality.txt";
+        file = "EDF_no_penality.txt/home/alessio/Documents/Architettura/ASSEMBLY/Eleaborato/Ordini/EDF_no_penality.txt";
         break;
     default:
         break;
