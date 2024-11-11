@@ -20,6 +20,15 @@ output_len: .long . - output_str
 vals_str: .ascii "Il file degli ordini contiene un errore, ricontrollarlo e verificare che i valori, e la sintassi, siano validi\n"
 vals_len: .long . - vals_str
 
+# ID: -1
+exit_str: .ascii "Bye Bye!\n"
+exit_len: .long . - exit_str
+
+
+exit_err_str: .ascii "Programma terminato con un errore.\n"
+exit_err_len: .long . - exit_err_str
+
+
 str: .string ""
 str_len: .int 0
 
@@ -57,15 +66,15 @@ error_handle:
 
 orders:
     movl $4, %eax 
-    movl $1, %ebx 
+    movl $2, %ebx 
     leal orders_str, %ecx
     movl orders_len, %edx
     int $0x80 
-    jmp _exit
+    jmp _exit_err
 
 algo_select:
     movl $4, %eax 
-    movl $1, %ebx 
+    movl $2, %ebx 
     leal algo_str, %ecx
     movl algo_len, %edx
     int $0x80
@@ -74,15 +83,15 @@ algo_select:
 
 param:
     movl $4, %eax 
-    movl $1, %ebx 
+    movl $2, %ebx 
     leal param_str, %ecx
     movl param_len, %edx
     int $0x80 
-    jmp _exit
+    jmp _exit_err
 
 _output:
     movl $4, %eax 
-    movl $1, %ebx 
+    movl $2, %ebx 
     leal output_str, %ecx
     movl output_len, %edx
     int $0x80 
@@ -91,13 +100,31 @@ _output:
 
 order_vals:
     movl $4, %eax 
-    movl $1, %ebx 
+    movl $2, %ebx 
     leal vals_str, %ecx
     movl vals_len, %edx
     int $0x80 
-    jmp _exit
-_exit:
-	movl $1, %eax
-	xorl %ebx, %ebx
+    jmp _exit_err
+
+_exit_err:
+    movl $4, %eax 
+    movl $2, %ebx 
+    leal exit_err_str, %ecx
+    movl exit_err_len, %edx
+    int $0x80 
+
+	movl $1, %eax # ese con errore
+	movl $1, %ebx
 	int $0x80
 
+
+_exit:
+    movl $4, %eax 
+    movl $1, %ebx 
+    leal exit_str, %ecx
+    movl exit_len, %edx
+    int $0x80 
+
+	movl $1, %eax 
+	xorl %ebx, %ebx
+	int $0x80

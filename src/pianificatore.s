@@ -4,7 +4,7 @@ str_algo: .ascii "1"
 str_algo_len: .long . - str_algo
 
 
-menu: .ascii "Selezionare l'algoritmo che si vuole utilizzare\n[1]->EDF\n[2]->HPF\n>" #stringa costante
+menu: .ascii "Selezionare l'algoritmo che si vuole utilizzare\n[1] -> Earliest Deadline First (EDF)\n[2] -> Highest Priority First (HPF)\n[3] -> Exit progam\n>" #stringa costante
 menu_len: .long . - menu 
 
 EDF_print: .ascii "Pianificazione EDF:\n"
@@ -60,11 +60,11 @@ read_orders:
 
 main_loop:
 
-    movl $4, %eax # metto in EAX il codice della system call WRITE.
-    movl $1, %ebx # Metti in EBX il file descritto del stdout. "Stream di output 1"
-    leal menu, %ecx # Metto in ECX (deciso dalla documentazione), i'indirizzo di inizio della stringa. Si in questo registro l'indirizzo di quello che vogliamo stampare
-    movl menu_len, %edx # carico il valore di hello nel registro EDX
-    int $0x80 # Lancia l'interrupt generico 0x80 per eseguire quello che ho scritto. controlla i valori di eax,ebx e ecx quindi capisce di stampare
+    movl $4, %eax
+    movl $1, %ebx
+    leal menu, %ecx
+    movl menu_len, %edx
+    int $0x80 
 
     #scanf
     movl $3, %eax
@@ -83,11 +83,14 @@ main_loop:
 
     cmp $50, %bl
     je HPF_debug_print
+
+    cmp $51, %bl
+    je _exit
     jne algo_error
 
     
-
-print_vals:
+# Sezione dove viene effettuato il sorting degli ordini
+sort:
 
     movl 16(%ebp), %eax
     cmp $-1, %eax
@@ -100,15 +103,15 @@ print_vals:
 
 continue_sort:
     addl $16, %ebp
-    jmp print_vals
+    jmp sort
 
 
 EDF_debug_print:    
     movl $1, ALGO
-    jmp print_vals
+    jmp sort
 HPF_debug_print:    
     movl $2, ALGO
-    jmp print_vals
+    jmp sort
 
 reset_ebp:
     movl %esp, %ebp
@@ -119,11 +122,7 @@ reset_ebp:
 
     movl $0, switch_flag # Reset flag for bubble sort
 
-    jmp print_vals
-
-
-
-    
+    jmp sort    
 EDF_compare:
     movl 20(%ebp), %ebx
     cmp 4(%ebp), %ebx
@@ -179,3 +178,7 @@ algo_error:
     movl $2, %eax
     call error_handle
     jmp main_loop
+
+_exit:
+    movl $-1, %eax
+    call error_handle

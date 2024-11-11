@@ -1,30 +1,19 @@
-# Variabili
-EXES=bin/pianificatore bin/file_read bin/get_arg
 AS=as --32
 LD=ld -m elf_i386
 FLAGS=-gstabs
 OBJS_PIANIFICATORE=obj/pianificatore.o
 OBJS_FILE_READ=obj/file_read.o
-OBJS_get_arg=obj/get_arg.o
 OBJS_read_file=obj/file_read.o
 OBJS_swap=obj/swap.o
 OBJS_itoa=obj/itoa.o
 OBJS_output=obj/output.o
-OBJS_errs=obj/handle_errs.o
+OBJS_errs=obj/errs_handle.o
 GCC=gcc
 
-# Regole per creare le directory necessarie
-.PHONY: all
-all: dirs $(EXES)
-
-# Regola per creare le directory
-.PHONY: dirs
-dirs:
-	mkdir -p bin obj
 
 # Regole per gli eseguibili
-bin/pianificatore: $(OBJS_PIANIFICATORE) $(OBJS_get_arg) $(OBJS_read_file) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output) $(OBJS_errs)
-	$(LD) $(OBJS_read_file) $(OBJS_get_arg) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output) $(OBJS_errs) $(OBJS_PIANIFICATORE) -o $@
+bin/pianificatore: $(OBJS_PIANIFICATORE) $(OBJS_read_file) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output) $(OBJS_errs)
+	$(LD) $(OBJS_read_file) $(OBJS_swap) $(OBJS_itoa) $(OBJS_output) $(OBJS_errs) $(OBJS_PIANIFICATORE) -o $@
 
 bin/file_read: $(OBJS_FILE_READ) $(OBJS_errs)
 	$(LD) -o $@ $(OBJS_FILE_READ) $(OBJS_errs)
@@ -38,11 +27,11 @@ bin/itoa: $(OBJS_itoa)
 bin/output: $(OBJS_output) $(OBJS_errs)
 	$(LD) -o $@ $(OBJS_output) $(OBJS_errs)
 
-bin/handle_errs: $(OBJS_errs)
+bin/errs_handle: $(OBJS_errs)
 	$(LD) -o $@ $(OBJS_errs)
 
 # Regole per gli oggetti
-obj/handle_errs.o: src/handle_errs.s
+obj/errs_handle.o: src/errs_handle.s
 	$(AS) $(FLAGS) -o $@ $<
 
 obj/output.o: src/output.s
@@ -61,7 +50,6 @@ obj/file_read.o: src/file_read.s
 obj/swap.o: src/swap.s
 	$(AS) $(FLAGS) -o $@ $<
 
-# Regola per pulire i file compilati
-.PHONY: clean
+
 clean:
-	rm -f obj/*.o $(EXES) core
+	rm -f obj/*.o bin/*

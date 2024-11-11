@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
     FILE *fid;
     Order *orders; int ordersNum;
 
-    fid = fopen("/home/alessio/Documents/Architettura/ASSEMBLY/Eleaborato/Ordini/EDF_no_penality.txt", "r");
+    fid = fopen("/home/alessio/Documents/Architettura/ASSEMBLY/Eleaborato/Ordini/Both.txt", "r");
     if(!fid){printf("Error in file\n");return 1;}
 
     orders = getOrders(fid, &ordersNum);
@@ -61,7 +61,7 @@ Order *getOrders(FILE *fid, int *elems){
     int buffer = 50;
     int count = 0;
 
-    fgets(string, BUFFER, fid);
+    // fgets(string, BUFFER, fid);
     while (!feof(fid))
     {
         fgets(string, BUFFER, fid);
@@ -72,7 +72,7 @@ Order *getOrders(FILE *fid, int *elems){
     rewind(fid);
     Order *orders = (Order *)malloc(count*sizeof(Order));
     int index = 0;
-    fgets(string, buffer+50, fid);
+    // fgets(string, buffer+50, fid);
     while (index<=count)
     {
         fscanf(fid, "%d,%d,%d,%d", &orders[index].id, &orders[index].durata,

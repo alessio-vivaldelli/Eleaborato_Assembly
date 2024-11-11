@@ -11,16 +11,10 @@ fd: .int 1
 time: .int 0
 penality: .int 0
 
-err_str: .ascii "Errore nell'apertura del file dove salvare i risultati, controllare che esista\n"
-err_len: .long . - err_str
-
-ID_Inizio: .ascii ""
-ID_Inizio_len: .long . - ID_Inizio
-
 Conclusione: .ascii "Conclusione: "
 Conclusione_len: .long . - Conclusione
 
-Penality_str: .ascii "Penality: "
+Penality_str: .ascii "Penalty: "
 Penality_len: .long . - Penality_str
 
 algo: .int 0
@@ -190,6 +184,6 @@ HPF:
     movl fd, %ebx 
     leal HPF_print, %ecx 
     movl HPF_len, %edx 
-    int $0x80 
+    int $0x80
 
     jmp print_vals

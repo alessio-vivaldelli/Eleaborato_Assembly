@@ -5,14 +5,8 @@
 file_descr:
     .int 0
 buffer: .string ""
-num_buffer: .string ""
-num_int: .int 0
 
-num: .int 0
-
-line_len: .int 0
 newline: .byte 10
-lines: .int 0
 
 .section .bss
 
@@ -20,7 +14,6 @@ lines: .int 0
     .globl read_file
 
 # file opening
-
 # L'indirizzo del file path si trova in ebx
 .type read_file, @function
     
@@ -33,8 +26,6 @@ read_file:
     #movl $filename, %ebx # Filename
     movl $0, %ecx  # 'r' mode
     int $0x80
-
-    # 44 -> ','
 
     # error on file opening
     cmp $0, %eax
@@ -55,18 +46,18 @@ _read_loop:
     # controllo errori file
     cmp $0, %eax
     jle _close_file 
+    xor %eax, %eax
 
     # controllo se ho una nuova linea
     movb buffer, %al
-    cmpb newline, %al 
+    # cmpb newline, %al 
 
     cmpb $44, %al
     je new_num
     cmpb $10, %al
     je new_num
     cmpb $3, %al
-    je new_num
-
+    je _close_file
 
     jmp atoi_num1
 
@@ -77,6 +68,12 @@ _close_file:
     movl $6, %eax
     xorl %ebx, %ebx
     int $0x80
+
+    # Tolgo il newline che i texteditor su Linux aggiungono, come vim e gedit
+    popl %eax
+    cmpl $0, %eax
+    je _exit
+    pushl %eax
 
     _exit:
     pushl %ebp
@@ -111,11 +108,14 @@ atoi_num1:
         mulb %cl    # -> eax = eax*10
 
         addl %ebx, %eax # eax + bl
+
+        cmpl $127, %eax
+        jg val_error
+
         pushl %eax
 
         jmp _read_loop
         
-
 
 new_num:
     pushl $0
@@ -124,4 +124,8 @@ new_num:
 
 error:
     movl $1, %eax
+    call error_handle
+
+val_error:
+    movl $5, %eax
     call error_handle
